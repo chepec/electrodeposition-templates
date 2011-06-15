@@ -1,0 +1,183 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\input{vc}
+%%% GEOMETRY - A4 paperwidth 8.27in, paperheight 11.69in
+\usepackage[a4paper,hmargin=1in,vmargin=0.75in,marginpar=0in]{geometry}
+\usepackage{csquotes}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{pdflscape}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage[version=3]{mhchem}
+   \SweaveOpts{echo=F, pdf=T, eps=F, eval=T, results=hide, keep.source=T, highlight=T, external=T}
+\usepackage[nogin]{Sweave}
+% Don't forget to include siunitx and unit macros in R options
+\usepackage{siunitx}
+   \sisetup{load-configurations=abbreviations, 
+      separate-uncertainty,
+      detect-family}
+   \DeclareSIUnit{\molar}{\mole\per\cubic\deci\metre}
+   \DeclareSIUnit{\Molar}{\textsc{m}}
+   \DeclareSIUnit{\voltAgCl}{\volt~vs.\ \ce{Ag}/\ce{AgCl}}
+   \DeclareSIUnit{\voltSHE}{\volt~vs.\ SHE}
+   \DeclareSIUnit{\voltSCE}{\volt~vs.\ SCE}
+   \DeclareSIUnit{\voltLi}{\volt~vs.\ \ce{Li}/\ce{Li+}}
+   \DeclareSIUnit{\rpm}{rpm}
+%%% ----------------------
+<<R-setup, echo=F, results=hide>>=
+setwd("/home/taha/chepec/chetex/LAB-REPORTS/templates")
+MyRFolder <- "/home/taha/chepec/chetex/common/R"
+options("tikzLatexPackages" = c(getOption("tikzLatexPackages"),
+      "\\usepackage[version=3]{mhchem}",
+      "\\usepackage{siunitx}",
+      "\\sisetup{load-configurations=abbreviations, separate-uncertainty, detect-family}",
+      "\\DeclareSIUnit{\\molar}{\\mole\\per\\cubic\\deci\\metre}",
+      "\\DeclareSIUnit{\\Molar}{\\textsc{m}}",
+      "\\DeclareSIUnit{\\voltAgCl}{\\volt~vs.\\ \\ce{Ag}/\\ce{AgCl}}",
+      "\\DeclareSIUnit{\\voltSHE}{\\volt~vs.\\ SHE}",
+      "\\DeclareSIUnit{\\voltSCE}{\\volt~vs.\\ SCE}",
+      "\\DeclareSIUnit{\\voltLi}{\\volt~vs.\\ \\ce{Li}/\\ce{Li+}}",
+      "\\DeclareSIUnit{\\rpm}{rpm}"),
+   digits   = 7,
+   width    = 84, # fits the current page geometry settings
+   continue = "  ",
+   prompt   = "> ")
+@
+%%% ----------------------
+<<load-R-packages, echo=F, results=hide>>=
+source(paste(MyRFolder, "common.R", sep = "/"))
+library(ggplot2)
+library(xtable)
+@
+
+<<experimental-parameters>>=
+prior.electrodes.sampleid            <- ""
+prior.electrodes.cleaned             <- ""
+prior.electrodes.mass                <- NA #grams
+prior.electrodes.RE                  <- ""
+prior.electrodes.CE                  <- ""
+remarks.during.experiment            <- ""
+prior.electrolyte.composition        <- ""
+prior.electrolyte.solvent            <- ""
+prior.electrolyte.volume             <- NA #millilitre
+prior.electrolyte.temperature        <- "" #deg C
+prior.electrolyte.temperature.method <- ""
+prior.electrolyte.stirring           <- ""
+prior.electrolyte.gas                <- ""
+remarks.after.experiment             <- ""
+deposit.appearance                   <- ""
+after.electrodes.area                <- NA #cm2
+after.electrodes.mass                <- NA #grams
+@
+
+\newcommand{\mc}[3]{\multicolumn{#1}{#2}{#3}}
+\newcommand{\celltitle}[1]{\footnotesize{\textcolor{gray}{#1}}}
+
+%%% ----------------------
+%%% DOCUMENT-WIDE PROPERTIES
+\newcommand{\experimentdate}{date:}
+\newcommand{\sampletitle}{Amperometry report}
+\newcommand{\sampleid}{sid:}
+\newcommand{\reportauthor}{Taha Ahmed}
+\newcommand{\reportinstitution}{Dept of materials chemistry, Uppsala university}
+%%% **********************   
+\usepackage[pdfkeywords={},%
+  pdfauthor={\reportauthor, \reportinstitution},%
+	pdftitle={Sample \sampleid},%
+	pdfsubject={\sampletitle},%
+	colorlinks=false]{hyperref}
+%% More command definitions
+\newcommand{\Figref}[1]{\hyperref[#1]{Figure~\ref*{#1}}}
+\newcommand{\Tabref}[1]{\hyperref[#1]{Table~\ref*{#1}}}
+\newcommand{\Eqref}[1]{\hyperref[#1]{Equation~\ref*{#1}}}
+\newcommand{\sample}[1]{\texttt{#1}}
+\newcommand{\R}{\textsf{R}}
+\newcommand{\Rfun}[1]{\texttt{#1}}
+\newcommand{\centerwide}[1]{\noindent\makebox[\textwidth]{#1}}
+
+% Suppress paragraph indentation
+\setlength{\parindent}{0in}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+
+
+\begin{document}
+\thispagestyle{fancy}
+\fancyhead[L]{\texttt{\jobname.Rnw}}
+\fancyhead[R]{Last commit \GITCommitterDate}
+\fancyfoot{}
+\fancyfoot[L]{\GITHash}
+\fancyfoot[R]{\thepage}
+
+\title{\sampletitle}
+\author{\texttt{\huge\sampleid}}
+\date{\experimentdate}
+\maketitle
+
+
+\begin{center}\sffamily
+\begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
+\mc{6}{l}{Electrodes}\\\hline
+ &  &  &  &  & \\[-12pt]
+\mc{2}{|l|}{\celltitle{Sampleid}} & \mc{2}{l}{\celltitle{Cleaned}} & \mc{2}{|l|}{\celltitle{Substrate mass/\si{\gram}}}\\
+\mc{2}{|r|}{\Sexpr{prior.electrodes.sampleid}} & \mc{2}{r}{\Sexpr{prior.electrodes.cleaned}} & \mc{2}{|r|}{\Sexpr{ifelse(is.na(prior.electrodes.mass), "", prior.electrodes.mass)}}\\\hline
+\mc{3}{|l|}{\celltitle{RE}} & \mc{3}{l|}{\celltitle{CE}}\\
+\mc{3}{|r|}{\Sexpr{prior.electrodes.RE}} & \mc{3}{r|}{\Sexpr{prior.electrodes.CE}}\\\hline
+\mc{6}{|l|}{\celltitle{Remarks during experiment}}\\
+\mc{6}{|r|}{\Sexpr{remarks.during.experiment}}\\
+\mc{6}{|r|}{\Sexpr{remarks.during.experiment}}\\\hline
+\mc{2}{|l|}{\celltitle{Deposit area (projected)/\si{\square\centi\metre}}} & \mc{2}{l}{\celltitle{Deposit appearance}} & \mc{2}{|l|}{\celltitle{Deposit mass/\si{\milli\gram}}}\\
+\mc{2}{|r|}{\Sexpr{ifelse(is.na(after.electrodes.area), "", after.electrodes.area)}} & \mc{2}{r}{\Sexpr{deposit.appearance}} & \mc{2}{|r|}{\Sexpr{ifelse(is.na(after.electrodes.mass - prior.electrodes.mass), "", formatC(1000 * (after.electrodes.mass - prior.electrodes.mass), format = "f", digits = 4))}}\\\hline
+\end{tabular}
+\end{center}
+
+
+\begin{center}\sffamily
+\begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
+\mc{6}{l}{Electrolyte}\\\hline
+ &  &  &  &  & \\[-12pt]
+\mc{4}{|l|}{\celltitle{Electrolyte composition}} & \mc{2}{l|}{\celltitle{Solvent}}\\
+\mc{4}{|r|}{\Sexpr{prior.electrolyte.composition}} & \mc{2}{r|}{\Sexpr{prior.electrolyte.solvent}}\\\hline
+\mc{1}{|l|}{\celltitle{Volume/\si{\milli\litre}}} & \mc{1}{l}{\celltitle{Temp/\si{\celsius}}} & \mc{1}{|l|}{\celltitle{Stirring}} & \mc{1}{l}{\celltitle{Gas}} & \mc{2}{|l|}{\celltitle{Temperature control method}}\\
+\mc{1}{|r|}{\Sexpr{ifelse(is.na(prior.electrolyte.volume), "", prior.electrolyte.volume)}} & \mc{1}{r}{\Sexpr{ifelse(is.na(prior.electrolyte.temperature), "", prior.electrolyte.temperature)}} & \mc{1}{|r|}{\Sexpr{prior.electrolyte.stirring}} & \mc{1}{r}{\Sexpr{prior.electrolyte.gas}} & \mc{2}{|r|}{\Sexpr{prior.electrolyte.temperature.method}}\\\hline
+\mc{6}{|l|}{\celltitle{Remarks after experiment}}\\
+\mc{6}{|r|}{\Sexpr{remarks.after.experiment}}\\
+\mc{6}{|r|}{\Sexpr{remarks.after.experiment}}\\\hline
+\end{tabular}
+\end{center}
+
+\begin{table}[tbp]
+\caption{Experiment parameters.}\label{tab:exp-params}
+\centerwide{%
+\begin{tabular}{lllllll}\toprule
+Sample id & 
+Potential steps/\si{\volt} & 
+Time steps/\si{\second} & 
+Sample interval/\si{\second} & 
+Standby potential/\si{\volt} & 
+Current range\\
+\midrule
+ & 
+ & 
+ & 
+ & 
+ & 
+ \\
+ & 
+ & 
+ & 
+ & 
+ & 
+ \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+
+\end{document}

@@ -1,0 +1,17 @@
+*/
+*.aux
+*.dep
+*.dpth
+*.fdb*
+*.figlist
+*.log
+*.makefile
+*.map
+*.out
+*.pdf
+*.R
+*.rda
+*.sh
+*.tex
+*.tikz
+vc.tex
