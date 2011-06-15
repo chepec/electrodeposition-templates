@@ -108,18 +108,46 @@ after.electrodes.mass                <- NA #grams
 
 
 \begin{document}
-\thispagestyle{fancy}
-\fancyhead[L]{\texttt{\jobname.Rnw}}
-\fancyhead[R]{Last commit \GITCommitterDate}
-\fancyfoot{}
-\fancyfoot[L]{\GITHash}
-\fancyfoot[R]{\thepage}
+\begin{center}
+\Large\sampletitle\\[10pt]
+\texttt{\huge\sampleid}\\[10pt]
+\Large{\experimentdate}
+\end{center}
 
-\title{\sampletitle}
-\author{\texttt{\huge\sampleid}}
-\date{\experimentdate}
-\maketitle
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead{}\fancyfoot{}
+\fancyfoot[L]{\small\textcolor{gray}{\GITHash}}
+\fancyfoot[R]{\small\textcolor{gray}{Report template committed \GITCommitterDate}}
 
+
+\begin{table}[h]
+\caption{Experiment parameters.}\label{tab:exp-params}
+\centerwide{%
+\begin{tabular}{lllllll}\toprule
+Sample id & 
+Potential steps/\si{\volt} & 
+Time steps/\si{\second} & 
+Sample interval/\si{\second} & 
+Standby potential/\si{\volt} & 
+Current range\\
+\midrule
+ & 
+ & 
+ & 
+ & 
+ & 
+ \\
+ & 
+ & 
+ & 
+ & 
+ & 
+ \\
+\bottomrule
+\end{tabular}}
+\end{table}
 
 \begin{center}\sffamily
 \begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
@@ -151,33 +179,6 @@ after.electrodes.mass                <- NA #grams
 \mc{6}{|r|}{\Sexpr{remarks.after.experiment}}\\\hline
 \end{tabular}
 \end{center}
-
-\begin{table}[tbp]
-\caption{Experiment parameters.}\label{tab:exp-params}
-\centerwide{%
-\begin{tabular}{lllllll}\toprule
-Sample id & 
-Potential steps/\si{\volt} & 
-Time steps/\si{\second} & 
-Sample interval/\si{\second} & 
-Standby potential/\si{\volt} & 
-Current range\\
-\midrule
- & 
- & 
- & 
- & 
- & 
- \\
- & 
- & 
- & 
- & 
- & 
- \\
-\bottomrule
-\end{tabular}}
-\end{table}
 
 
 \end{document}
