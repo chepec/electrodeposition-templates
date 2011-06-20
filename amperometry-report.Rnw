@@ -7,6 +7,7 @@
 \usepackage[a4paper,hmargin=1in,vmargin=0.75in,marginpar=0in]{geometry}
 \usepackage{csquotes}
 \usepackage{tikz}
+   \usetikzlibrary{backgrounds, calc}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{longtable}
@@ -31,7 +32,7 @@
    \DeclareSIUnit{\rpm}{rpm}
 %%% ----------------------
 <<R-setup, echo=F, results=hide>>=
-setwd("/home/taha/chepec/chetex/LAB-REPORTS/templates")
+setwd("/home/taha/chepec/chetex/LAB-REPORTS/templates/amperometry")
 MyRFolder <- "/home/taha/chepec/chetex/common/R"
 options("tikzLatexPackages" = c(getOption("tikzLatexPackages"),
       "\\usepackage[version=3]{mhchem}",
@@ -279,7 +280,56 @@ param$integrator <- ""
 \mc{1}{l}{Electrode configuration and other inlets/outlets}\\\hline
 \\[-12pt]
 \mc{1}{|c|}{}\\
-\mc{1}{|c|}{\includegraphics[width=1.5in]{/home/taha/chepec/instruments/CHI760/teflon-cap-no-annot.pdf}}\\
+\mc{1}{|c|}{%
+   \tikzexternaldisable
+   %\tikzstyle{background grid}=[draw, black!50,step=.5cm]
+   \begin{tikzpicture}[font=\footnotesize\bfseries, style=thick]
+      % The above right option is used to place the lower left corner
+      % of the image at the (0,0) coordinate. 
+      \node [inner sep=0pt,above right] 
+         {\includegraphics[width=1.5in]{/home/taha/chepec/instruments/CHI760/teflon-cap-no-annot.pdf}};
+      % Main and auxiliary ports in teflon cap
+      \node [name=port1, rectangle, inner sep=8pt] at (1.30, 1.98) {};
+      \node [name=port2, rectangle, inner sep=8pt] at (2.32, 2.58) {};
+      \node [name=port3, rectangle, inner sep=8pt] at (2.32, 1.45) {};
+      \node [name=aux1, rectangle, inner sep=2pt] at (1.55, 1.18) {};
+      \node [name=aux2, rectangle, inner sep=2pt] at (1.58, 2.68) {};
+      % Descriptors and connectors (to create a nice bend)
+      \node at (port1.west) 
+         [name=port1desc, anchor=south east, xshift=-2cm, inner sep=2pt, text=white, fill=black!75, draw=black!75] 
+         {WE};
+      \node at (port2.north east) 
+         [name=port2desc, anchor=south west, xshift=2cm, yshift=0.5cm, inner sep=2pt, text=white, fill=black!75, draw=black!75] 
+         {RE};
+      \node at (port2.north east) 
+         [name=port2bend, xshift=1.5cm, yshift=0.5cm] 
+         {};
+      \node at (port3.south east) 
+         [name=port3desc, anchor=north west, xshift=2cm, yshift=-0.5cm, inner sep=2pt, text=white, fill=black!75, draw=black!75] 
+         {CE};
+      \node at (port3.south east) 
+         [name=port3bend, xshift=1.5cm, yshift=-0.5cm] 
+         {};
+      \node at (aux1.south west) 
+         [name=aux1desc, anchor=north east, xshift=-2cm, yshift=-0.5cm, inner sep=2pt, text=white, fill=black!75, draw=black!75]
+         {Aux 1};
+      \node at (aux1.south west) 
+         [name=aux1bend, xshift=-1.5cm, yshift=-0.5cm] 
+         {};
+      \node at (aux2.north west) 
+         [name=aux2desc, anchor=south east, xshift=-2cm, yshift=0.5cm, inner sep=2pt, text=white, fill=black!75, draw=black!75] 
+         {Aux 2};
+      \node at (aux2.north west) 
+         [name=aux2bend, xshift=-1.5cm, yshift=0.5cm] 
+         {};
+      % Connect the nodes
+      \draw (port1.west) -- (port1desc.south east);
+      \draw [join=round] (port2.north east) -- (port2bend.center) -- (port2desc.south west);
+      \draw [join=round] (port3.south east) -- (port3bend.center) -- (port3desc.north west);
+      \draw [join=round] (aux1.south west) -- (aux1bend.center) -- (aux1desc.north east);
+      \draw [join=round] (aux2.north west) -- (aux2bend.center) -- (aux2desc.south east);
+   \end{tikzpicture}
+}\\
 \mc{1}{|c|}{}\\\hline
 \end{tabular}
 \end{center}
