@@ -56,32 +56,134 @@ library(ggplot2)
 library(xtable)
 @
 
-<<experimental-parameters>>=
-prior.electrodes.sampleid            <- ""
-prior.electrodes.cleaned             <- ""
-prior.electrodes.mass                <- NA #grams
-prior.electrodes.RE                  <- ""
-prior.electrodes.CE                  <- ""
-remarks.during.experiment            <- ""
-prior.electrolyte.composition        <- ""
-prior.electrolyte.solvent            <- ""
-prior.electrolyte.volume             <- NA #millilitre
-prior.electrolyte.temperature        <- "" #deg C
-prior.electrolyte.temperature.method <- ""
-prior.electrolyte.stirring           <- ""
-prior.electrolyte.gas                <- ""
-remarks.after.experiment             <- ""
-deposit.appearance                   <- ""
-after.electrodes.area                <- NA #cm2
-after.electrodes.mass                <- NA #grams
+<<obs-exp>>=
+# Collect all observations in this list
+obs <- list()
+obs$experiment.date                <- ""
+obs$electrodes.sampleid            <- ""
+obs$electrodes.cleaned             <- ""
+obs$electrodes.mass.prior          <- "" #grams
+obs$electrodes.RE                  <- ""
+obs$electrodes.CE                  <- ""
+obs$remarks.during                 <- ""
+obs$electrolyte.composition        <- ""
+obs$electrolyte.solvent            <- ""
+obs$electrolyte.volume             <- "" #millilitre
+obs$electrolyte.temperature        <- "" #deg C
+obs$electrolyte.temperature.method <- ""
+obs$electrolyte.stirring           <- ""
+obs$electrolyte.gas                <- ""
+obs$remarks.after                  <- ""
+obs$deposit.appearance             <- ""
+obs$electrodes.area                <- "" #cm2
+obs$electrodes.mass.post           <- "" #grams
 @
 
-\newcommand{\mc}[3]{\multicolumn{#1}{#2}{#3}}
-\newcommand{\celltitle}[1]{\footnotesize{\textcolor{gray}{#1}}}
+
+<<param-exp>>=
+# Experiment parameters for amperometry in GPES version 4.9
+param <- list()
+### ------ ###
+### PAGE 1 ###
+### ------ ###
+## >> Pretreatment
+# First conditioning potential / volts
+param$cond.pot.first <- ""
+# Duration of first conditioning potential / seconds
+param$cond.pot.first.duration <- ""
+# Equilibration time / seconds
+param$eq.time <- ""
+## >> Measurement
+# Interval time / seconds
+param$interval.time <- ""
+# Cell off after measurement
+param$cell.off.after.measurement <- ""
+# Standby potential / volts
+param$standby.potential <- ""
+# Number of potential steps
+param$number.pot.steps <- ""
+# Potential steps / volts
+param$potentials <- ""
+# Potential step durations / seconds
+param$durations <- ""
+### ------ ###
+### PAGE 2 ###
+### ------ ###
+## >> Pretreatment
+# Stop equilibration at threshold
+param$stop.eq.at.threshold <- ""
+# Equilibration threshold value / ampere
+param$eq.threshold.value <- ""
+# Second conditioning potential / volts
+param$cond.pot.second <- ""
+# Duration of second conditioning potential / seconds
+param$cond.pot.second.duration <- ""
+# Third conditioning potential / volts
+param$cond.pot.third <- ""
+# Duration of third conditioning potential / seconds
+param$cond.pot.third.duration <- ""
+## >> Measurement
+# Define potential with respect to OCP
+param$define.pot.wrt.ocp <- ""
+# Time to wait for OCP / seconds
+param$time.wait.for.ocp <- ""
+# Surface area / cm2
+param$surface.area <- ""
+# Specify cutoff value
+param$specify.cutoff.value <- ""
+# Cut off on charge
+param$cutoff.on.charge <- ""
+# Cut off value for i > / ampere
+param$cutoff.i.larger <- ""
+# Cut off value for i < / ampere
+param$cutoff.i.less <- ""
+# Number of cycles
+param$number.cycles <- ""
+# Stop cycles at cut off
+param$stop.cycles.at.cutoff <- ""
+# Specify time limit
+param$specify.time.limit <- ""
+# Cut off value for time > / seconds
+param$cutoff.time.larger <- ""
+# Specify maximum delta i (current)
+param$specify.max.delta.i <- ""
+# Maximum delta i / ampere
+param$max.delta.i <- ""
+# Specify minimum variation
+param$specify.min.variation <- ""
+# Minimum variation / ampere per second
+param$min.variation <- ""
+## >> Miscellaneous
+# Record second signal
+param$record.second.signal <- ""
+# Type of (secondary) signal 
+param$secondary.signal <- ""
+# Signal multiplier (for the secondary signal, I suppose)
+param$signal.multiplier <- ""
+# Signal offset (again, for the secondary signal, probably)
+param$signal.offset <- ""
+# Specify cut off value for 2nd signal
+param$specify.cutoff.second.signal <- ""
+# Cut off value for second signal > (V')
+param$cutoff.second.signal.larger <- ""
+# Cut off value for second signal < (V')
+param$cutoff.second.signal.less <- ""
+### ----- ###
+### EXTRA ###
+### ----- ###
+param$instrument <- ""
+param$method <- ""
+param$computer <- ""
+param$current.range <- ""
+param$high.sensitivity <- ""
+param$stability.vs.speed <- ""
+param$integrator <- ""
+@
+
 
 %%% ----------------------
 %%% DOCUMENT-WIDE PROPERTIES
-\newcommand{\experimentdate}{date:}
+\newcommand{\experimentdate}{Date:}
 \newcommand{\sampletitle}{Amperometry report}
 \newcommand{\sampleid}{sid:}
 \newcommand{\reportauthor}{Taha Ahmed}
@@ -89,8 +191,8 @@ after.electrodes.mass                <- NA #grams
 %%% **********************   
 \usepackage[pdfkeywords={},%
   pdfauthor={\reportauthor, \reportinstitution},%
-	pdftitle={Sample \sampleid},%
-	pdfsubject={\sampletitle},%
+	pdftitle={Report template: amperometry},%
+	pdfsubject={Report template},%
 	colorlinks=false]{hyperref}
 %% More command definitions
 \newcommand{\Figref}[1]{\hyperref[#1]{Figure~\ref*{#1}}}
@@ -100,18 +202,20 @@ after.electrodes.mass                <- NA #grams
 \newcommand{\R}{\textsf{R}}
 \newcommand{\Rfun}[1]{\texttt{#1}}
 \newcommand{\centerwide}[1]{\noindent\makebox[\textwidth]{#1}}
+\newcommand{\mc}[3]{\multicolumn{#1}{#2}{#3}}
+\newcommand{\celltitle}[1]{\footnotesize{\textcolor{gray}{#1}}}
 
 % Suppress paragraph indentation
 \setlength{\parindent}{0in}
 \setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
-
-
-
 \begin{document}
 \begin{center}
-\Large\sampletitle\\[10pt]
-\texttt{\huge\sampleid}\\[10pt]
+\large\sampletitle\\
+\fbox{\begin{minipage}{2in}
+\begin{flushleft}
 \Large{\experimentdate}
+\end{flushleft}
+\end{minipage}}
 \end{center}
 
 \pagestyle{fancy}
@@ -122,46 +226,36 @@ after.electrodes.mass                <- NA #grams
 \fancyfoot[R]{\small\textcolor{gray}{Report template committed \GITCommitterDate}}
 
 
-\begin{table}[h]
-\caption{Experiment parameters.}\label{tab:exp-params}
-\centerwide{%
-\begin{tabular}{lllllll}\toprule
-Sample id & 
-Potential steps/\si{\volt} & 
-Time steps/\si{\second} & 
-Sample interval/\si{\second} & 
-Standby potential/\si{\volt} & 
-Current range\\
-\midrule
- & 
- & 
- & 
- & 
- & 
- \\
- & 
- & 
- & 
- & 
- & 
- \\
-\bottomrule
-\end{tabular}}
-\end{table}
+\begin{center}\sffamily
+\begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
+\mc{6}{l}{Experiment parameters}\\\hline
+ &  &  &  &  & \\[-12pt]
+\mc{6}{|l|}{\celltitle{Method}}\\
+\mc{6}{|r|}{\Sexpr{param$method}}\\\hline
+\mc{2}{|l|}{\celltitle{Potential steps/\si{\volt}}} & \mc{2}{l}{\celltitle{Potential duration/\si{\second}}} & \mc{1}{|l|}{\celltitle{Interval time/\si{\second}}} & \mc{1}{l|}{\celltitle{Current range}}\\
+\mc{2}{|r|}{\Sexpr{param$potentials}} & \mc{2}{r}{\Sexpr{param$durations}} & \mc{1}{|r|}{\Sexpr{param$interval.time}} & \mc{1}{r|}{\Sexpr{param$current.range}}\\\hline
+\mc{1}{|l|}{\celltitle{High sensitivity}} & \mc{1}{l}{\celltitle{Stability\,/\,speed}} & \mc{1}{|l|}{\celltitle{Integrator}} & \mc{1}{l}{\celltitle{Conditioning/\si{\volt}}} & \mc{1}{|l|}{\celltitle{Conditioning/\si{\second}}} & \mc{1}{l|}{\celltitle{Equilibration/\si{\second}}}\\
+\mc{1}{|r|}{\Sexpr{param$high.sensitivity}} & \mc{1}{r}{\Sexpr{param$stability.vs.speed}} & \mc{1}{|r|}{\Sexpr{param$integrator}} & \mc{1}{r}{\Sexpr{param$cond.pot.first}} & \mc{1}{|r|}{\Sexpr{param$cond.pot.first.duration}} & \mc{1}{r|}{\Sexpr{param$eq.time}}\\\hline
+\mc{2}{|l|}{\celltitle{Cell off after measurement}} & \mc{1}{l}{\celltitle{Standby pot./\si{\volt}}} &  \mc{2}{|l|}{\celltitle{Define potential w.r.t. OCP}} & \mc{1}{l|}{\celltitle{Wait for OCP/\si{\second}}}\\
+\mc{2}{|r|}{\Sexpr{param$cell.off.after.measurement}} & \mc{1}{r}{\Sexpr{param$standby.potential}} & \mc{2}{|r|}{\Sexpr{param$define.pot.wrt.ocp}} & \mc{1}{r|}{\Sexpr{param$time.wait.for.ocp}}\\\hline
+\mc{3}{|l|}{\celltitle{Instrument}} & \mc{3}{l|}{\celltitle{Computer}}\\
+\mc{3}{|r|}{\Sexpr{param$instrument}} & \mc{3}{r|}{\Sexpr{param$computer}}\\\hline
+\end{tabular}
+\end{center}
+
 
 \begin{center}\sffamily
 \begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
 \mc{6}{l}{Electrodes}\\\hline
  &  &  &  &  & \\[-12pt]
 \mc{2}{|l|}{\celltitle{Sampleid}} & \mc{2}{l}{\celltitle{Cleaned}} & \mc{2}{|l|}{\celltitle{Substrate mass/\si{\gram}}}\\
-\mc{2}{|r|}{\Sexpr{prior.electrodes.sampleid}} & \mc{2}{r}{\Sexpr{prior.electrodes.cleaned}} & \mc{2}{|r|}{\Sexpr{ifelse(is.na(prior.electrodes.mass), "", prior.electrodes.mass)}}\\\hline
+\mc{2}{|r|}{\Sexpr{obs$electrodes.sampleid}} & \mc{2}{r}{\Sexpr{obs$electrodes.cleaned}} & \mc{2}{|r|}{\Sexpr{obs$electrodes.mass.prior}}\\\hline
 \mc{3}{|l|}{\celltitle{RE}} & \mc{3}{l|}{\celltitle{CE}}\\
-\mc{3}{|r|}{\Sexpr{prior.electrodes.RE}} & \mc{3}{r|}{\Sexpr{prior.electrodes.CE}}\\\hline
+\mc{3}{|r|}{\Sexpr{obs$electrodes.RE}} & \mc{3}{r|}{\Sexpr{obs$electrodes.CE}}\\\hline
 \mc{6}{|l|}{\celltitle{Remarks during experiment}}\\
-\mc{6}{|r|}{\Sexpr{remarks.during.experiment}}\\
-\mc{6}{|r|}{\Sexpr{remarks.during.experiment}}\\\hline
-\mc{2}{|l|}{\celltitle{Deposit area (projected)/\si{\square\centi\metre}}} & \mc{2}{l}{\celltitle{Deposit appearance}} & \mc{2}{|l|}{\celltitle{Deposit mass/\si{\milli\gram}}}\\
-\mc{2}{|r|}{\Sexpr{ifelse(is.na(after.electrodes.area), "", after.electrodes.area)}} & \mc{2}{r}{\Sexpr{deposit.appearance}} & \mc{2}{|r|}{\Sexpr{ifelse(is.na(after.electrodes.mass - prior.electrodes.mass), "", formatC(1000 * (after.electrodes.mass - prior.electrodes.mass), format = "f", digits = 4))}}\\\hline
+\mc{6}{|r|}{\Sexpr{obs$remarks.during}}\\\hline
+\mc{2}{|l|}{\celltitle{Deposit area (projected)/\si{\square\centi\metre}}} & \mc{3}{l}{\celltitle{Deposit appearance}} & \mc{1}{|l|}{\celltitle{Deposit mass/\si{\milli\gram}}}\\
+\mc{2}{|r|}{\Sexpr{obs$electrodes.area}} & \mc{3}{r}{\Sexpr{obs$deposit.appearance}} & \mc{1}{|r|}{\Sexpr{""}}\\\hline
 \end{tabular}
 \end{center}
 
@@ -171,12 +265,22 @@ Current range\\
 \mc{6}{l}{Electrolyte}\\\hline
  &  &  &  &  & \\[-12pt]
 \mc{4}{|l|}{\celltitle{Electrolyte composition}} & \mc{2}{l|}{\celltitle{Solvent}}\\
-\mc{4}{|r|}{\Sexpr{prior.electrolyte.composition}} & \mc{2}{r|}{\Sexpr{prior.electrolyte.solvent}}\\\hline
+\mc{4}{|r|}{\Sexpr{obs$electrolyte.composition}} & \mc{2}{r|}{\Sexpr{obs$electrolyte.solvent}}\\\hline
 \mc{1}{|l|}{\celltitle{Volume/\si{\milli\litre}}} & \mc{1}{l}{\celltitle{Temp/\si{\celsius}}} & \mc{1}{|l|}{\celltitle{Stirring}} & \mc{1}{l}{\celltitle{Gas}} & \mc{2}{|l|}{\celltitle{Temperature control method}}\\
-\mc{1}{|r|}{\Sexpr{ifelse(is.na(prior.electrolyte.volume), "", prior.electrolyte.volume)}} & \mc{1}{r}{\Sexpr{ifelse(is.na(prior.electrolyte.temperature), "", prior.electrolyte.temperature)}} & \mc{1}{|r|}{\Sexpr{prior.electrolyte.stirring}} & \mc{1}{r}{\Sexpr{prior.electrolyte.gas}} & \mc{2}{|r|}{\Sexpr{prior.electrolyte.temperature.method}}\\\hline
+\mc{1}{|r|}{\Sexpr{ifelse(is.na(obs$electrolyte.volume), "", "")}} & \mc{1}{r}{\Sexpr{ifelse(is.na(obs$electrolyte.temperature), "", "")}} & \mc{1}{|r|}{\Sexpr{obs$electrolyte.stirring}} & \mc{1}{r}{\Sexpr{obs$electrolyte.gas}} & \mc{2}{|r|}{\Sexpr{obs$electrolyte.temperature.method}}\\\hline
 \mc{6}{|l|}{\celltitle{Remarks after experiment}}\\
-\mc{6}{|r|}{\Sexpr{remarks.after.experiment}}\\
-\mc{6}{|r|}{\Sexpr{remarks.after.experiment}}\\\hline
+\mc{6}{|r|}{\Sexpr{obs$remarks.after}}\\\hline
+\end{tabular}
+\end{center}
+
+
+\begin{center}\sffamily
+\begin{tabular}{p{6.0in}}
+\mc{1}{l}{Electrode configuration and other inlets/outlets}\\\hline
+\\[-12pt]
+\mc{1}{|c|}{}\\
+\mc{1}{|c|}{\includegraphics[width=1.5in]{/home/taha/chepec/instruments/CHI760/teflon-cap-no-annot.pdf}}\\
+\mc{1}{|c|}{}\\\hline
 \end{tabular}
 \end{center}
 
