@@ -4,6 +4,7 @@
 *.dpth
 *.fdb*
 *.figlist
+*.fls
 *.log
 *.makefile
 *.map
@@ -15,3 +16,4 @@
 *.tex
 *.tikz
 vc.tex
+.knitme

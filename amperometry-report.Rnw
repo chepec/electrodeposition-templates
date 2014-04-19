@@ -7,7 +7,7 @@
 \usepackage[a4paper,hmargin=1in,vmargin=0.75in,marginpar=0in]{geometry}
 \usepackage{csquotes}
 \usepackage{tikz}
-   \usetikzlibrary{backgrounds, calc}
+   \usetikzlibrary{external,backgrounds,calc}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{longtable}
@@ -16,8 +16,6 @@
 \usepackage{tabularx}
 \usepackage{amsmath}
 \usepackage[version=3]{mhchem}
-   \SweaveOpts{echo=F, pdf=T, eps=F, eval=T, results=hide, keep.source=T, highlight=T, external=T}
-\usepackage[nogin]{Sweave}
 % Don't forget to include siunitx and unit macros in R options
 \usepackage{siunitx}
    \sisetup{load-configurations=abbreviations, 
@@ -31,33 +29,61 @@
    \DeclareSIUnit{\voltLi}{\volt~vs.\ \ce{Li}/\ce{Li+}}
    \DeclareSIUnit{\rpm}{rpm}
 %%% ----------------------
-<<R-setup, echo=F, results=hide>>=
-setwd("/home/taha/chepec/chetex/LAB-REPORTS/templates/amperometry")
+<<'R-setup', echo=F, results='hide'>>=
+setwd("/home/taha/chepec/chetex/LAB-REPORTS/templates/amperometry-chi-cell")
 MyRFolder <- "/home/taha/chepec/chetex/common/R"
-options("tikzLatexPackages" = c(getOption("tikzLatexPackages"),
-      "\\usepackage[version=3]{mhchem}",
-      "\\usepackage{siunitx}",
-      "\\sisetup{load-configurations=abbreviations, separate-uncertainty, detect-family}",
-      "\\DeclareSIUnit{\\molar}{\\mole\\per\\cubic\\deci\\metre}",
-      "\\DeclareSIUnit{\\Molar}{\\textsc{m}}",
-      "\\DeclareSIUnit{\\voltAgCl}{\\volt~vs.\\ \\ce{Ag}/\\ce{AgCl}}",
-      "\\DeclareSIUnit{\\voltSHE}{\\volt~vs.\\ SHE}",
-      "\\DeclareSIUnit{\\voltSCE}{\\volt~vs.\\ SCE}",
-      "\\DeclareSIUnit{\\voltLi}{\\volt~vs.\\ \\ce{Li}/\\ce{Li+}}",
-      "\\DeclareSIUnit{\\rpm}{rpm}"),
-   digits   = 7,
-   width    = 84, # fits the current page geometry settings
-   continue = "  ",
-   prompt   = "> ")
+options(digits   = 7,
+        width    = 84, # fits the current page geometry settings
+        continue = "  ",
+        prompt   = "> ",
+        stringsAsFactors = FALSE)
 @
 %%% ----------------------
-<<load-R-packages, echo=F, results=hide>>=
-source(paste(MyRFolder, "common.R", sep = "/"))
+<<'load-R-packages', echo=FALSE, results='hide', message=FALSE>>=
+source(paste(MyRFolder, "init.R", sep = "/"))
+sourceDir(paste(MyRFolder, "common", sep = "/"))
 library(ggplot2)
 library(xtable)
+library(knitr)
+opts_chunk$set(dev = 'tikz', 
+               external = FALSE, 
+               cache = FALSE,
+               fig.width = 6, 
+               fig.height = 4.2, 
+               out.width = '\\textwidth', 
+               fig.align = 'center', 
+               echo = FALSE, 
+               eval = TRUE, 
+               results = 'hide', 
+               message = FALSE, 
+               warning = FALSE,
+               tidy = FALSE)
+library(tikzDevice)
+options("tikzLatexPackages" = 
+           c(getOption("tikzLatexPackages"),
+             "\\usepackage[version=3]{mhchem}",
+             "\\usepackage{amsmath}",
+             "\\usepackage{siunitx}",
+             "\\sisetup{load-configurations=abbreviations, separate-uncertainty, detect-family}",
+             "\\DeclareSIUnit{\\molar}{\\mole\\per\\cubic\\deci\\metre}",
+             "\\DeclareSIUnit{\\Molar}{\\textsc{m}}",
+             "\\DeclareSIUnit{\\voltAgCl}{\\volt~vs.\\ \\ce{Ag}/\\ce{AgCl}}",
+             "\\DeclareSIUnit{\\voltSHE}{\\volt~vs.\\ SHE}",
+             "\\DeclareSIUnit{\\voltSCE}{\\volt~vs.\\ SCE}",
+             "\\DeclareSIUnit{\\voltLi}{\\volt~vs.\\ \\ce{Li}/\\ce{Li+}}",
+             "\\DeclareSIUnit{\\rpm}{rpm}"),
+        #tikzDocumentDeclaration = "\\documentclass[10pt]{standalone}\n",
+        tikzMetricPackages = 
+           c("\\usepackage[T1]{fontenc}\n",
+             "\\usepackage[utf8]{inputenc}\n",
+             "\\usepackage[english]{babel}\n",
+             "\\usetikzlibrary{calc}\n"))
 @
 
-<<obs-exp>>=
+
+
+
+<<'obs-exp'>>=
 # Collect all observations in this list
 obs <- list()
 obs$experiment.date                <- ""
@@ -66,9 +92,10 @@ obs$electrodes.cleaned             <- ""
 obs$electrodes.mass.prior          <- "" #grams
 obs$electrodes.RE                  <- ""
 obs$electrodes.CE                  <- ""
+obs$electrodes.substrate           <- ""
 obs$remarks.during                 <- ""
-obs$electrolyte.composition        <- ""
-obs$electrolyte.solvent            <- ""
+obs$electrolyte.id                 <- ""
+obs$electrolyte.precursors         <- ""
 obs$electrolyte.volume             <- "" #millilitre
 obs$electrolyte.temperature        <- "" #deg C
 obs$electrolyte.temperature.method <- ""
@@ -188,7 +215,7 @@ param$integrator <- ""
 \newcommand{\sampletitle}{Amperometry report}
 \newcommand{\sampleid}{sid:}
 \newcommand{\reportauthor}{Taha Ahmed}
-\newcommand{\reportinstitution}{Dept of materials chemistry, Uppsala university}
+\newcommand{\reportinstitution}{Dept of chemistry--Ångström, Uppsala university}
 %%% **********************   
 \usepackage[pdfkeywords={},%
   pdfauthor={\reportauthor, \reportinstitution},%
@@ -251,8 +278,8 @@ param$integrator <- ""
  &  &  &  &  & \\[-12pt]
 \mc{2}{|l|}{\celltitle{Sampleid}} & \mc{2}{l}{\celltitle{Cleaned}} & \mc{2}{|l|}{\celltitle{Substrate mass/\si{\gram}}}\\
 \mc{2}{|r|}{\Sexpr{obs$electrodes.sampleid}} & \mc{2}{r}{\Sexpr{obs$electrodes.cleaned}} & \mc{2}{|r|}{\Sexpr{obs$electrodes.mass.prior}}\\\hline
-\mc{3}{|l|}{\celltitle{RE}} & \mc{3}{l|}{\celltitle{CE}}\\
-\mc{3}{|r|}{\Sexpr{obs$electrodes.RE}} & \mc{3}{r|}{\Sexpr{obs$electrodes.CE}}\\\hline
+\mc{2}{|l|}{\celltitle{RE}} & \mc{2}{l|}{\celltitle{CE}} & \mc{2}{l|}{\celltitle{Sample substrate}}\\
+\mc{2}{|r|}{\Sexpr{obs$electrodes.RE}} & \mc{2}{r|}{\Sexpr{obs$electrodes.CE}} & \mc{2}{r|}{\Sexpr{obs$electrodes.substrate}}\\\hline
 \mc{6}{|l|}{\celltitle{Remarks during experiment}}\\
 \mc{6}{|r|}{\Sexpr{obs$remarks.during}}\\\hline
 \mc{2}{|l|}{\celltitle{Deposit area (projected)/\si{\square\centi\metre}}} & \mc{3}{l}{\celltitle{Deposit appearance}} & \mc{1}{|l|}{\celltitle{Deposit mass/\si{\milli\gram}}}\\
@@ -265,8 +292,8 @@ param$integrator <- ""
 \begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
 \mc{6}{l}{Electrolyte}\\\hline
  &  &  &  &  & \\[-12pt]
-\mc{4}{|l|}{\celltitle{Electrolyte composition}} & \mc{2}{l|}{\celltitle{Solvent}}\\
-\mc{4}{|r|}{\Sexpr{obs$electrolyte.composition}} & \mc{2}{r|}{\Sexpr{obs$electrolyte.solvent}}\\\hline
+\mc{4}{|l|}{\celltitle{Electrolyte id}} & \mc{2}{l|}{\celltitle{Precursors}}\\
+\mc{4}{|r|}{\Sexpr{obs$electrolyte.id}} & \mc{2}{r|}{\Sexpr{obs$electrolyte.precursors}}\\\hline
 \mc{1}{|l|}{\celltitle{Volume/\si{\milli\litre}}} & \mc{1}{l}{\celltitle{Temp/\si{\celsius}}} & \mc{1}{|l|}{\celltitle{Stirring}} & \mc{1}{l}{\celltitle{Gas}} & \mc{2}{|l|}{\celltitle{Temperature control method}}\\
 \mc{1}{|r|}{\Sexpr{ifelse(is.na(obs$electrolyte.volume), "", "")}} & \mc{1}{r}{\Sexpr{ifelse(is.na(obs$electrolyte.temperature), "", "")}} & \mc{1}{|r|}{\Sexpr{obs$electrolyte.stirring}} & \mc{1}{r}{\Sexpr{obs$electrolyte.gas}} & \mc{2}{|r|}{\Sexpr{obs$electrolyte.temperature.method}}\\\hline
 \mc{6}{|l|}{\celltitle{Remarks after experiment}}\\
@@ -287,7 +314,7 @@ param$integrator <- ""
       % The above right option is used to place the lower left corner
       % of the image at the (0,0) coordinate. 
       \node [inner sep=0pt,above right] 
-         {\includegraphics[width=1.5in]{/home/taha/chepec/instruments/CHI760/teflon-cap-no-annot.pdf}};
+         {\includegraphics[width=1.5in]{/home/taha/chepec/chetex/electrodeposition-cells/CHI/teflon-cap-no-annot.pdf}};
       % Main and auxiliary ports in teflon cap
       \node [name=port1, rectangle, inner sep=8pt] at (1.30, 1.98) {};
       \node [name=port2, rectangle, inner sep=8pt] at (2.32, 2.58) {};
