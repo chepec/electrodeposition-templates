@@ -1,0 +1,346 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\input{vc}
+%%% GEOMETRY - A4 paperwidth 8.27in, paperheight 11.69in
+\usepackage[a4paper,hmargin=1in,vmargin=0.75in,marginpar=0in]{geometry}
+\usepackage{csquotes}
+\usepackage{tikz}
+   \usetikzlibrary{backgrounds, calc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{pdflscape}
+\usepackage{fancyhdr}
+\usepackage{tabularx}
+\usepackage{amsmath}
+\usepackage[version=3]{mhchem}
+% Don't forget to include siunitx and unit macros in R options
+\usepackage{siunitx}
+   \sisetup{load-configurations=abbreviations, 
+      separate-uncertainty,
+      detect-family}
+   \DeclareSIUnit{\molar}{\mole\per\cubic\deci\metre}
+   \DeclareSIUnit{\Molar}{\textsc{m}}
+   \DeclareSIUnit{\voltAgCl}{\volt~vs.\ \ce{Ag}/\ce{AgCl}}
+   \DeclareSIUnit{\voltSHE}{\volt~vs.\ SHE}
+   \DeclareSIUnit{\voltSCE}{\volt~vs.\ SCE}
+   \DeclareSIUnit{\voltLi}{\volt~vs.\ \ce{Li}/\ce{Li+}}
+   \DeclareSIUnit{\rpm}{rpm}
+%%% ----------------------
+<<'R-setup', echo=F, results='hide'>>=
+setwd("/home/taha/chepec/chetex/LAB-REPORTS/templates/amperometry-metrohm-cell")
+MyRFolder <- "/home/taha/chepec/chetex/common/R"
+options("tikzLatexPackages" = c(getOption("tikzLatexPackages"),
+      "\\usepackage[version=3]{mhchem}",
+      "\\usepackage{siunitx}",
+      "\\sisetup{load-configurations=abbreviations, separate-uncertainty, detect-family}",
+      "\\DeclareSIUnit{\\molar}{\\mole\\per\\cubic\\deci\\metre}",
+      "\\DeclareSIUnit{\\Molar}{\\textsc{m}}",
+      "\\DeclareSIUnit{\\voltAgCl}{\\volt~vs.\\ \\ce{Ag}/\\ce{AgCl}}",
+      "\\DeclareSIUnit{\\voltSHE}{\\volt~vs.\\ SHE}",
+      "\\DeclareSIUnit{\\voltSCE}{\\volt~vs.\\ SCE}",
+      "\\DeclareSIUnit{\\voltLi}{\\volt~vs.\\ \\ce{Li}/\\ce{Li+}}",
+      "\\DeclareSIUnit{\\rpm}{rpm}"),
+   digits   = 7,
+   width    = 84, # fits the current page geometry settings
+   continue = "  ",
+   prompt   = "> ")
+@
+%%% ----------------------
+<<'load-R-packages', echo=F, results='hide'>>=
+source(paste(MyRFolder, "init.R", sep = "/"))
+sourceDir(paste(MyRFolder, "common", sep = "/"))
+library(knitr)
+opts_chunk$set(dev        = 'tikz', 
+               external   = FALSE, 
+               cache      = FALSE,
+               fig.width  = 6, 
+               fig.height = 5, 
+               out.width  = '\\textwidth', 
+               fig.align  = 'center', 
+               echo       = FALSE, 
+               eval       = TRUE, 
+               results    = 'hide', 
+               message    = FALSE, 
+               tidy       = FALSE)
+@
+
+<<'obs-exp'>>=
+# Collect all observations in this list
+obs <- list()
+obs$experiment.date                <- ""
+obs$electrodes.sampleid            <- ""
+obs$electrodes.cleaned             <- ""
+obs$electrodes.mass.prior          <- "" #grams
+obs$electrodes.RE                  <- ""
+obs$electrodes.CE                  <- ""
+obs$electrodes.substrate           <- ""
+obs$remarks.during                 <- ""
+obs$electrolyte.id                 <- ""
+obs$electrolyte.precursors         <- ""
+obs$electrolyte.volume             <- "" #millilitre
+obs$electrolyte.temperature        <- "" #deg C
+obs$electrolyte.temperature.method <- ""
+obs$electrolyte.stirring           <- ""
+obs$electrolyte.gas                <- ""
+obs$remarks.after                  <- ""
+obs$deposit.appearance             <- ""
+obs$electrodes.area                <- "" #cm2
+obs$electrodes.mass.post           <- "" #grams
+@
+
+
+<<'param-exp'>>=
+# Experiment parameters for amperometry in GPES version 4.9
+param <- list()
+### ------ ###
+### PAGE 1 ###
+### ------ ###
+## >> Pretreatment
+# First conditioning potential / volts
+param$cond.pot.first <- ""
+# Duration of first conditioning potential / seconds
+param$cond.pot.first.duration <- ""
+# Equilibration time / seconds
+param$eq.time <- ""
+## >> Measurement
+# Interval time / seconds
+param$interval.time <- ""
+# Cell off after measurement
+param$cell.off.after.measurement <- ""
+# Standby potential / volts
+param$standby.potential <- ""
+# Number of potential steps
+param$number.pot.steps <- ""
+# Potential steps / volts
+param$potentials <- ""
+# Potential step durations / seconds
+param$durations <- ""
+### ------ ###
+### PAGE 2 ###
+### ------ ###
+## >> Pretreatment
+# Stop equilibration at threshold
+param$stop.eq.at.threshold <- ""
+# Equilibration threshold value / ampere
+param$eq.threshold.value <- ""
+# Second conditioning potential / volts
+param$cond.pot.second <- ""
+# Duration of second conditioning potential / seconds
+param$cond.pot.second.duration <- ""
+# Third conditioning potential / volts
+param$cond.pot.third <- ""
+# Duration of third conditioning potential / seconds
+param$cond.pot.third.duration <- ""
+## >> Measurement
+# Define potential with respect to OCP
+param$define.pot.wrt.ocp <- ""
+# Time to wait for OCP / seconds
+param$time.wait.for.ocp <- ""
+# Surface area / cm2
+param$surface.area <- ""
+# Specify cutoff value
+param$specify.cutoff.value <- ""
+# Cut off on charge
+param$cutoff.on.charge <- ""
+# Cut off value for i > / ampere
+param$cutoff.i.larger <- ""
+# Cut off value for i < / ampere
+param$cutoff.i.less <- ""
+# Number of cycles
+param$number.cycles <- ""
+# Stop cycles at cut off
+param$stop.cycles.at.cutoff <- ""
+# Specify time limit
+param$specify.time.limit <- ""
+# Cut off value for time > / seconds
+param$cutoff.time.larger <- ""
+# Specify maximum delta i (current)
+param$specify.max.delta.i <- ""
+# Maximum delta i / ampere
+param$max.delta.i <- ""
+# Specify minimum variation
+param$specify.min.variation <- ""
+# Minimum variation / ampere per second
+param$min.variation <- ""
+## >> Miscellaneous
+# Record second signal
+param$record.second.signal <- ""
+# Type of (secondary) signal 
+param$secondary.signal <- ""
+# Signal multiplier (for the secondary signal, I suppose)
+param$signal.multiplier <- ""
+# Signal offset (again, for the secondary signal, probably)
+param$signal.offset <- ""
+# Specify cut off value for 2nd signal
+param$specify.cutoff.second.signal <- ""
+# Cut off value for second signal > (V')
+param$cutoff.second.signal.larger <- ""
+# Cut off value for second signal < (V')
+param$cutoff.second.signal.less <- ""
+### ----- ###
+### EXTRA ###
+### ----- ###
+param$instrument <- ""
+param$method <- ""
+param$computer <- ""
+param$current.range <- ""
+param$high.sensitivity <- ""
+param$stability.vs.speed <- ""
+param$integrator <- ""
+@
+
+
+%%% ----------------------
+%%% DOCUMENT-WIDE PROPERTIES
+\newcommand{\experimentdate}{Date:}
+\newcommand{\sampletitle}{Amperometry report}
+\newcommand{\sampleid}{sid:}
+\newcommand{\reportauthor}{Taha Ahmed}
+\newcommand{\reportinstitution}{Dept of chemistry--Ångström, Uppsala university}
+%%% **********************   
+\usepackage[pdfkeywords={},%
+  pdfauthor={\reportauthor, \reportinstitution},%
+	pdftitle={Report template: amperometry},%
+	pdfsubject={Report template},%
+	colorlinks=false]{hyperref}
+%% More command definitions
+\newcommand{\sample}[1]{\texttt{#1}}
+\newcommand{\R}{\textsf{R}}
+\newcommand{\Rfun}[1]{\texttt{#1}}
+\newcommand{\centerwide}[1]{\noindent\makebox[\textwidth]{#1}}
+\newcommand{\mc}[3]{\multicolumn{#1}{#2}{#3}}
+\newcommand{\celltitle}[1]{\footnotesize{\textcolor{gray}{#1}}}
+
+% Suppress paragraph indentation
+\setlength{\parindent}{0in}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+\begin{document}
+\begin{center}
+\large\sampletitle\\
+\fbox{\begin{minipage}{2in}
+\begin{flushleft}
+\Large{\experimentdate}
+\end{flushleft}
+\end{minipage}}
+\end{center}
+
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancyhead{}\fancyfoot{}
+\fancyfoot[L]{\small\textcolor{gray}{\GITHash}}
+\fancyfoot[R]{\small\textcolor{gray}{Report template committed \GITCommitterDate}}
+
+
+\begin{center}\sffamily
+\begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
+\mc{6}{l}{Experiment parameters}\\\hline
+ &  &  &  &  & \\[-12pt]
+\mc{6}{|l|}{\celltitle{Method}}\\
+\mc{6}{|r|}{\Sexpr{param$method}}\\\hline
+\mc{2}{|l|}{\celltitle{Potential steps/\si{\volt}}} & \mc{2}{l}{\celltitle{Potential duration/\si{\second}}} & \mc{1}{|l|}{\celltitle{Interval time/\si{\second}}} & \mc{1}{l|}{\celltitle{Current range}}\\
+\mc{2}{|r|}{\Sexpr{param$potentials}} & \mc{2}{r}{\Sexpr{param$durations}} & \mc{1}{|r|}{\Sexpr{param$interval.time}} & \mc{1}{r|}{\Sexpr{param$current.range}}\\\hline
+\mc{1}{|l|}{\celltitle{High sensitivity}} & \mc{1}{l}{\celltitle{Stability\,/\,speed}} & \mc{1}{|l|}{\celltitle{Integrator}} & \mc{1}{l}{\celltitle{Conditioning/\si{\volt}}} & \mc{1}{|l|}{\celltitle{Conditioning/\si{\second}}} & \mc{1}{l|}{\celltitle{Equilibration/\si{\second}}}\\
+\mc{1}{|r|}{\Sexpr{param$high.sensitivity}} & \mc{1}{r}{\Sexpr{param$stability.vs.speed}} & \mc{1}{|r|}{\Sexpr{param$integrator}} & \mc{1}{r}{\Sexpr{param$cond.pot.first}} & \mc{1}{|r|}{\Sexpr{param$cond.pot.first.duration}} & \mc{1}{r|}{\Sexpr{param$eq.time}}\\\hline
+\mc{2}{|l|}{\celltitle{Cell off after measurement}} & \mc{1}{l}{\celltitle{Standby pot./\si{\volt}}} &  \mc{2}{|l|}{\celltitle{Define potential w.r.t. OCP}} & \mc{1}{l|}{\celltitle{Wait for OCP/\si{\second}}}\\
+\mc{2}{|r|}{\Sexpr{param$cell.off.after.measurement}} & \mc{1}{r}{\Sexpr{param$standby.potential}} & \mc{2}{|r|}{\Sexpr{param$define.pot.wrt.ocp}} & \mc{1}{r|}{\Sexpr{param$time.wait.for.ocp}}\\\hline
+\mc{3}{|l|}{\celltitle{Instrument}} & \mc{3}{l|}{\celltitle{Computer}}\\
+\mc{3}{|r|}{\Sexpr{param$instrument}} & \mc{3}{r|}{\Sexpr{param$computer}}\\\hline
+\end{tabular}
+\end{center}
+
+
+\begin{center}\sffamily
+\begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
+\mc{6}{l}{Electrodes}\\\hline
+ &  &  &  &  & \\[-12pt]
+\mc{2}{|l|}{\celltitle{Sampleid}} & \mc{2}{l}{\celltitle{Cleaned}} & \mc{2}{|l|}{\celltitle{Substrate mass/\si{\gram}}}\\
+\mc{2}{|r|}{\Sexpr{obs$electrodes.sampleid}} & \mc{2}{r}{\Sexpr{obs$electrodes.cleaned}} & \mc{2}{|r|}{\Sexpr{obs$electrodes.mass.prior}}\\\hline
+\mc{2}{|l|}{\celltitle{RE}} & \mc{2}{l|}{\celltitle{CE}} & \mc{2}{l|}{\celltitle{Sample substrate}}\\
+\mc{2}{|r|}{\Sexpr{obs$electrodes.RE}} & \mc{2}{r|}{\Sexpr{obs$electrodes.CE}} & \mc{2}{r|}{\Sexpr{obs$electrodes.substrate}}\\\hline
+\mc{6}{|l|}{\celltitle{Remarks during experiment}}\\
+\mc{6}{|r|}{\Sexpr{obs$remarks.during}}\\\hline
+\mc{2}{|l|}{\celltitle{Deposit area (geometric)/\si{\square\centi\metre}}} & \mc{3}{l}{\celltitle{Deposit appearance}} & \mc{1}{|l|}{\celltitle{Deposit mass/\si{\milli\gram}}}\\
+\mc{2}{|r|}{\Sexpr{obs$electrodes.area}} & \mc{3}{r}{\Sexpr{obs$deposit.appearance}} & \mc{1}{|r|}{\Sexpr{""}}\\\hline
+\end{tabular}
+\end{center}
+
+
+\begin{center}\sffamily
+\begin{tabular}{p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}@{}p{1.0in}}
+\mc{6}{l}{Electrolyte}\\\hline
+ &  &  &  &  & \\[-12pt]
+\mc{3}{|l|}{\celltitle{Electrolyte id}} & \mc{3}{l|}{\celltitle{Precursors}}\\
+\mc{3}{|r|}{\Sexpr{obs$electrolyte.id}} & \mc{3}{r|}{\Sexpr{obs$electrolyte.precursors}}\\\hline
+\mc{1}{|l|}{\celltitle{Volume/\si{\milli\litre}}} & \mc{1}{l}{\celltitle{Temp/\si{\celsius}}} & \mc{1}{|l|}{\celltitle{Stirring}} & \mc{1}{l}{\celltitle{Gas}} & \mc{2}{|l|}{\celltitle{Temperature control method}}\\
+\mc{1}{|r|}{\Sexpr{ifelse(is.na(obs$electrolyte.volume), "", "")}} & \mc{1}{r}{\Sexpr{ifelse(is.na(obs$electrolyte.temperature), "", "")}} & \mc{1}{|r|}{\Sexpr{obs$electrolyte.stirring}} & \mc{1}{r}{\Sexpr{obs$electrolyte.gas}} & \mc{2}{|r|}{\Sexpr{obs$electrolyte.temperature.method}}\\\hline
+\mc{6}{|l|}{\celltitle{Remarks after experiment}}\\
+\mc{6}{|r|}{\Sexpr{obs$remarks.after}}\\\hline
+\end{tabular}
+\end{center}
+
+
+\begin{center}\sffamily
+\begin{tabular}{p{6.0in}}
+\mc{1}{l}{Cell inlets/outlets}\\\hline
+\\[-12pt]
+\mc{1}{|c|}{}\\
+\mc{1}{|c|}{%
+   %\tikzexternaldisable
+   %\tikzstyle{background grid}=[draw, black!50,step=.5cm]
+   \begin{tikzpicture}[font=\footnotesize\bfseries, style=thick]
+      % The above right option is used to place the lower left corner
+      % of the image at the (0,0) coordinate. 
+      \node [inner sep=0pt,above right] 
+         {\includegraphics[width=2.5in]{metrohm-lid-photos/zenith-photocopy.png}};
+%       % Main and auxiliary ports in teflon cap
+%       \node [name=port1, rectangle, inner sep=8pt] at (1.30, 1.98) {};
+%       \node [name=port2, rectangle, inner sep=8pt] at (2.32, 2.58) {};
+%       \node [name=port3, rectangle, inner sep=8pt] at (2.32, 1.45) {};
+%       \node [name=aux1, rectangle, inner sep=2pt] at (1.55, 1.18) {};
+%       \node [name=aux2, rectangle, inner sep=2pt] at (1.58, 2.68) {};
+%       % Descriptors and connectors (to create a nice bend)
+%       \node at (port1.west) 
+%          [name=port1desc, anchor=south east, xshift=-2cm, inner sep=2pt, text=white, fill=black!75, draw=black!75] 
+%          {Aux};
+%       \node at (port2.north east) 
+%          [name=port2desc, anchor=south west, xshift=2cm, yshift=0.5cm, inner sep=2pt, text=white, fill=black!75, draw=black!75] 
+%          {2};
+%       \node at (port2.north east) 
+%          [name=port2bend, xshift=1.5cm, yshift=0.5cm] 
+%          {};
+%       \node at (port3.south east) 
+%          [name=port3desc, anchor=north west, xshift=2cm, yshift=-0.5cm, inner sep=2pt, text=white, fill=black!75, draw=black!75] 
+%          {3};
+%       \node at (port3.south east) 
+%          [name=port3bend, xshift=1.5cm, yshift=-0.5cm] 
+%          {};
+%       \node at (aux1.south west) 
+%          [name=aux1desc, anchor=north east, xshift=-2cm, yshift=-0.5cm, inner sep=2pt, text=white, fill=black!75, draw=black!75]
+%          {4};
+%       \node at (aux1.south west) 
+%          [name=aux1bend, xshift=-1.5cm, yshift=-0.5cm] 
+%          {};
+%       \node at (aux2.north west) 
+%          [name=aux2desc, anchor=south east, xshift=-2cm, yshift=0.5cm, inner sep=2pt, text=white, fill=black!75, draw=black!75] 
+%          {1};
+%       \node at (aux2.north west) 
+%          [name=aux2bend, xshift=-1.5cm, yshift=0.5cm] 
+%          {};
+%       % Connect the nodes
+%       \draw (port1.west) -- (port1desc.south east);
+%       \draw [join=round] (port2.north east) -- (port2bend.center) -- (port2desc.south west);
+%       \draw [join=round] (port3.south east) -- (port3bend.center) -- (port3desc.north west);
+%       \draw [join=round] (aux1.south west) -- (aux1bend.center) -- (aux1desc.north east);
+%       \draw [join=round] (aux2.north west) -- (aux2bend.center) -- (aux2desc.south east);
+   \end{tikzpicture}
+}\\
+\mc{1}{|c|}{}\\\hline
+\end{tabular}
+\end{center}
+
+
+\end{document}
