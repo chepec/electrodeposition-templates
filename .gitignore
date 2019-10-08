@@ -1,4 +1,4 @@
-*/
+.git/
 *.aux
 *.dep
 *.dpth
@@ -9,7 +9,6 @@
 *.makefile
 *.map
 *.out
-*.pdf
 *.R
 *.rda
 *.sh

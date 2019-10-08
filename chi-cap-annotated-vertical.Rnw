@@ -3,50 +3,55 @@
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
 \usepackage[tightpage,active]{preview}
-\usepackage{csquotes}
+%%% GEOMETRY - A4 paperwidth 8.27in, paperheight 11.69in
+\usepackage[a4paper,hmargin=1in,vmargin=0.75in,marginpar=0in]{geometry}
 \usepackage{tikz}
-   \usetikzlibrary{backgrounds, calc}
+   \usetikzlibrary{external,backgrounds,calc}
 \usepackage{graphicx}
 \usepackage{amsmath}
-\usepackage[version=3]{mhchem}
-   \SweaveOpts{echo=F, pdf=T, eps=F, eval=T, results=hide, keep.source=T, highlight=T, external=T}
-\usepackage[nogin]{Sweave}
-% Don't forget to include siunitx and unit macros in R options
+% We also have to include siunitx and unit macros in R options below
 \usepackage{siunitx}
    \sisetup{load-configurations=abbreviations, 
       separate-uncertainty,
       detect-family}
-   \DeclareSIUnit{\molar}{\mole\per\cubic\deci\metre}
-   \DeclareSIUnit{\Molar}{\textsc{m}}
-   \DeclareSIUnit{\voltAgCl}{\volt~vs.\ \ce{Ag}/\ce{AgCl}}
-   \DeclareSIUnit{\voltSHE}{\volt~vs.\ SHE}
-   \DeclareSIUnit{\voltSCE}{\volt~vs.\ SCE}
-   \DeclareSIUnit{\voltLi}{\volt~vs.\ \ce{Li}/\ce{Li+}}
-   \DeclareSIUnit{\rpm}{rpm}
+% git watermark at bottom centre of each sheet (not visible when using tightpage)
+% see the gitinfo2 manual for instructions on how to setup gitinfo in your working directory
+\usepackage{gitinfo2}
+   \renewcommand{\gitMarkFormat}{\color{gray}\scriptsize\sffamily}
+\pagestyle{empty}
 %%% ----------------------
-<<R-setup, echo=F, results=hide>>=
-setwd("/home/taha/chepec/chetex/electrodeposition-cell")
-MyRFolder <- "/home/taha/chepec/chetex/common/R"
-options("tikzLatexPackages" = c(getOption("tikzLatexPackages"),
-      "\\usepackage[version=3]{mhchem}",
-      "\\usepackage{siunitx}",
-      "\\sisetup{load-configurations=abbreviations, separate-uncertainty, detect-family}",
-      "\\DeclareSIUnit{\\molar}{\\mole\\per\\cubic\\deci\\metre}",
-      "\\DeclareSIUnit{\\Molar}{\\textsc{m}}",
-      "\\DeclareSIUnit{\\voltAgCl}{\\volt~vs.\\ \\ce{Ag}/\\ce{AgCl}}",
-      "\\DeclareSIUnit{\\voltSHE}{\\volt~vs.\\ SHE}",
-      "\\DeclareSIUnit{\\voltSCE}{\\volt~vs.\\ SCE}",
-      "\\DeclareSIUnit{\\voltLi}{\\volt~vs.\\ \\ce{Li}/\\ce{Li+}}",
-      "\\DeclareSIUnit{\\rpm}{rpm}"),
-   continue = "  ",
-   prompt   = "> ")
+<<'R-setup', echo=F, results='hide'>>=
+options(stringsAsFactors = FALSE)
 @
 %%% ----------------------
-<<load-R-packages, echo=F, results=hide>>=
-source(paste(MyRFolder, "init.R", sep = "/"))
-sourceDir(paste(MyRFolder, "common", sep = "/"))
-library(ggplot2)
-library(xtable)
+<<'load-R-packages', echo=FALSE, results='hide', message=FALSE>>=
+library(common)
+library(knitr)
+opts_chunk$set(dev = 'tikz', 
+               external = FALSE, 
+               cache = FALSE,
+               fig.width = 6, 
+               fig.height = 4.2, 
+               out.width = '\\textwidth', 
+               fig.align = 'center', 
+               echo = FALSE, 
+               eval = TRUE, 
+               results = 'hide', 
+               message = FALSE, 
+               warning = FALSE,
+               tidy = FALSE)
+library(tikzDevice)
+options("tikzLatexPackages" = 
+           c(getOption("tikzLatexPackages"),
+             "\\usepackage{amsmath}",
+             "\\usepackage{siunitx}",
+             "\\sisetup{load-configurations=abbreviations, separate-uncertainty, detect-family}"),
+        #tikzDocumentDeclaration = "\\documentclass[10pt]{standalone}\n",
+        tikzMetricPackages = 
+           c("\\usepackage[T1]{fontenc}\n",
+             "\\usepackage[utf8]{inputenc}\n",
+             "\\usepackage[english]{babel}\n",
+             "\\usetikzlibrary{calc}\n"))
 @
 
 
@@ -54,21 +59,14 @@ library(xtable)
 %%% ----------------------
 %%% DOCUMENT-WIDE PROPERTIES
 \newcommand{\reportauthor}{Taha Ahmed}
-\newcommand{\reportinstitution}{Dept of materials chemistry, Uppsala university}
+\newcommand{\reportinstitution}{Dept of chemistry, Uppsala university}
 %%% **********************   
 \usepackage[pdfkeywords={},%
   pdfauthor={\reportauthor, \reportinstitution},%
    pdftitle={Teflon cap configuration},%
    pdfsubject={CHI760c},%
 	colorlinks=false]{hyperref}
-%% More command definitions
-\newcommand{\Figref}[1]{\hyperref[#1]{Figure~\ref*{#1}}}
-\newcommand{\Tabref}[1]{\hyperref[#1]{Table~\ref*{#1}}}
-\newcommand{\Eqref}[1]{\hyperref[#1]{Equation~\ref*{#1}}}
-\newcommand{\sample}[1]{\texttt{#1}}
-\newcommand{\R}{\textsf{R}}
-\newcommand{\Rfun}[1]{\texttt{#1}}
-\newcommand{\centerwide}[1]{\noindent\makebox[\textwidth]{#1}}
+
 
 \begin{document}
 
@@ -79,7 +77,7 @@ library(xtable)
       % The above right option is used to place the lower left corner
       % of the image at the (0,0) coordinate. 
       \node [inner sep=0pt,above right] 
-         {\includegraphics[width=1.5in]{teflon-cap-no-annot.pdf}};
+         {\includegraphics[width=1.5in]{chi-cap/teflon-cap-no-annot.pdf}};
       % Main and auxiliary ports in teflon cap
       \node [name=port1, rectangle, inner sep=8pt] at (1.30, 1.98) {};
       \node [name=port2, rectangle, inner sep=8pt] at (2.32, 2.58) {};
