@@ -2,48 +2,29 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[english]{babel}
-\input{vc}
 %%% GEOMETRY - A4 paperwidth 8.27in, paperheight 11.69in
 \usepackage[a4paper,hmargin=1in,vmargin=0.75in,marginpar=0in]{geometry}
-\usepackage{csquotes}
 \usepackage{tikz}
    \usetikzlibrary{external,backgrounds,calc}
 \usepackage{graphicx}
-\usepackage{booktabs}
-\usepackage{longtable}
-\usepackage{pdflscape}
-\usepackage{fancyhdr}
-\usepackage{tabularx}
 \usepackage{amsmath}
-\usepackage[version=3]{mhchem}
-% Don't forget to include siunitx and unit macros in R options
+% We also have to include siunitx and unit macros in R options below
 \usepackage{siunitx}
    \sisetup{load-configurations=abbreviations, 
       separate-uncertainty,
       detect-family}
-   \DeclareSIUnit{\molar}{\mole\per\cubic\deci\metre}
-   \DeclareSIUnit{\Molar}{\textsc{m}}
-   \DeclareSIUnit{\voltAgCl}{\volt~vs.\ \ce{Ag}/\ce{AgCl}}
-   \DeclareSIUnit{\voltSHE}{\volt~vs.\ SHE}
-   \DeclareSIUnit{\voltSCE}{\volt~vs.\ SCE}
-   \DeclareSIUnit{\voltLi}{\volt~vs.\ \ce{Li}/\ce{Li+}}
-   \DeclareSIUnit{\rpm}{rpm}
+% git watermark at bottom centre of each sheet
+% see the gitinfo2 manual for instructions on how to setup gitinfo in your working directory
+\usepackage[mark]{gitinfo2}
+   \renewcommand{\gitMarkFormat}{\color{gray}\scriptsize\sffamily}
+\pagestyle{empty}
 %%% ----------------------
 <<'R-setup', echo=F, results='hide'>>=
-setwd("/home/taha/chepec/chetex/LAB-REPORTS/templates/amperometry-chi-cell")
-MyRFolder <- "/home/taha/chepec/chetex/common/R"
-options(digits   = 7,
-        width    = 84, # fits the current page geometry settings
-        continue = "  ",
-        prompt   = "> ",
-        stringsAsFactors = FALSE)
+options(stringsAsFactors = FALSE)
 @
 %%% ----------------------
 <<'load-R-packages', echo=FALSE, results='hide', message=FALSE>>=
-source(paste(MyRFolder, "init.R", sep = "/"))
-sourceDir(paste(MyRFolder, "common", sep = "/"))
-library(ggplot2)
-library(xtable)
+library(common)
 library(knitr)
 opts_chunk$set(dev = 'tikz', 
                external = FALSE, 
@@ -61,17 +42,9 @@ opts_chunk$set(dev = 'tikz',
 library(tikzDevice)
 options("tikzLatexPackages" = 
            c(getOption("tikzLatexPackages"),
-             "\\usepackage[version=3]{mhchem}",
              "\\usepackage{amsmath}",
              "\\usepackage{siunitx}",
-             "\\sisetup{load-configurations=abbreviations, separate-uncertainty, detect-family}",
-             "\\DeclareSIUnit{\\molar}{\\mole\\per\\cubic\\deci\\metre}",
-             "\\DeclareSIUnit{\\Molar}{\\textsc{m}}",
-             "\\DeclareSIUnit{\\voltAgCl}{\\volt~vs.\\ \\ce{Ag}/\\ce{AgCl}}",
-             "\\DeclareSIUnit{\\voltSHE}{\\volt~vs.\\ SHE}",
-             "\\DeclareSIUnit{\\voltSCE}{\\volt~vs.\\ SCE}",
-             "\\DeclareSIUnit{\\voltLi}{\\volt~vs.\\ \\ce{Li}/\\ce{Li+}}",
-             "\\DeclareSIUnit{\\rpm}{rpm}"),
+             "\\sisetup{load-configurations=abbreviations, separate-uncertainty, detect-family}"),
         #tikzDocumentDeclaration = "\\documentclass[10pt]{standalone}\n",
         tikzMetricPackages = 
            c("\\usepackage[T1]{fontenc}\n",
@@ -79,8 +52,6 @@ options("tikzLatexPackages" =
              "\\usepackage[english]{babel}\n",
              "\\usetikzlibrary{calc}\n"))
 @
-
-
 
 
 <<'obs-exp'>>=
@@ -222,14 +193,7 @@ param$integrator <- ""
 	pdftitle={Report template: amperometry},%
 	pdfsubject={Report template},%
 	colorlinks=false]{hyperref}
-%% More command definitions
-\newcommand{\Figref}[1]{\hyperref[#1]{Figure~\ref*{#1}}}
-\newcommand{\Tabref}[1]{\hyperref[#1]{Table~\ref*{#1}}}
-\newcommand{\Eqref}[1]{\hyperref[#1]{Equation~\ref*{#1}}}
-\newcommand{\sample}[1]{\texttt{#1}}
-\newcommand{\R}{\textsf{R}}
-\newcommand{\Rfun}[1]{\texttt{#1}}
-\newcommand{\centerwide}[1]{\noindent\makebox[\textwidth]{#1}}
+%% Custom command definitions
 \newcommand{\mc}[3]{\multicolumn{#1}{#2}{#3}}
 \newcommand{\celltitle}[1]{\footnotesize{\textcolor{gray}{#1}}}
 
@@ -245,13 +209,6 @@ param$integrator <- ""
 \end{flushleft}
 \end{minipage}}
 \end{center}
-
-\pagestyle{fancy}
-\renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
-\fancyhead{}\fancyfoot{}
-\fancyfoot[L]{\small\textcolor{gray}{\GITHash}}
-\fancyfoot[R]{\small\textcolor{gray}{Report template committed \GITCommitterDate}}
 
 
 \begin{center}\sffamily
@@ -314,7 +271,7 @@ param$integrator <- ""
       % The above right option is used to place the lower left corner
       % of the image at the (0,0) coordinate. 
       \node [inner sep=0pt,above right] 
-         {\includegraphics[width=1.5in]{/home/taha/chepec/chetex/electrodeposition-cells/CHI/teflon-cap-no-annot.pdf}};
+         {\includegraphics[width=1.5in]{chi-cap/teflon-cap-no-annot.pdf}};
       % Main and auxiliary ports in teflon cap
       \node [name=port1, rectangle, inner sep=8pt] at (1.30, 1.98) {};
       \node [name=port2, rectangle, inner sep=8pt] at (2.32, 2.58) {};
